@@ -1,0 +1,36 @@
+create table musician (ssn varchar(5) primary key, name varchar(20), address varchar(20), phone bigint(10));
+
+create table instrument (iid varchar(5) primary key, iname varchar(20), ikey varchar(10));
+
+create table album (aid varchar(5) primary key, aname varchar(20), copyright varchar(20), no_of_songs int(3), ssn varchar(5), foreign key(ssn) references musician(ssn));
+
+create table song (sid varchar(5) primary key, sname varchar(20), author varchar(20), aid varchar(5), foreign key(aid) references album(aid));
+
+create table play (ssn varchar(5), iid varchar(5), foreign key(ssn) references musician(ssn), foreign key(iid) references instrument(iid),primary key(ssn, iid));
+
+create table perform (ssn varchar(5), sid varchar(5), foreign key(ssn) references musician(ssn), foreign key(sid) references song(sid), primary key(ssn, sid));
+
+
+
+
+
+1.1
+
+select distinct m.name, s.title, a.title from musician m, song s, album a, perform p where m.ssn = p.ssn and p.ssn=a.ssn and s.a_id=a.a_id;
+
+1.2
+
+select m.name, m.ssn from musician m where m.ssn not in (select a.ssn from album a);
+
+1.3
+
+select s.* from song s where s_id in (select s_id from perform group by s_id having count(ssn)>3);
+
+1.4
+select name, count(i.i_id), count(i.i_id)/(select count(*) from musician) as Average from instrument i, play p where i.i_id=p.i_id group by i.i_id;
+
+1.5
+select a.title, a.a_id from album a, play p, instrument i where a.ssn = p.ssn and p.i_id = i.i_id and i.name ="flute" and exists (select a.title from album a, play p, instrument i where a.ssn = p.ssn and p.i_id = i.i_id and i.name ="guitar") and a.ssn in (select ssn from album where no_of_songs >= (select avg(no_of_songs) from album));
+ 
+1.6
+select m.* from musician m where m.ssn in (select p.ssn from play p, instrument i where i.i_id = p.i_id group by p.ssn having count(p.ssn) = (select count(*) from instrument));
